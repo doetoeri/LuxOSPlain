@@ -7,7 +7,7 @@ class LuxOS {
 
     async init() {
         this.registerCommand('help', this.showHelp.bind(this));
-        this.registerCommand('loadmodule', this.loadModule.bind(this));
+        this.registerCommand('ins', this.insertModule.bind(this)); // loadmodule -> ins 변경
         this.registerCommand('listmodules', this.listModules.bind(this));
         this.registerCommand('exit', this.exitSystem.bind(this));
 
@@ -50,16 +50,16 @@ class LuxOS {
     showHelp() {
         this.displayMessage("Available commands:");
         this.displayMessage("- help: Show this help message.");
-        this.displayMessage("- loadmodule [module]: Load a module.");
+        this.displayMessage("- ins [module]: Insert a module.");
         this.displayMessage("- listmodules: List all loaded modules.");
         this.displayMessage("- exit: Exit the system.");
     }
 
-    // 명령어: loadmodule
-    async loadModule(args) {
+    // 명령어: ins
+    async insertModule(args) {
         const moduleName = args[0];
         if (!moduleName) {
-            this.displayMessage("Usage: loadmodule [module_name]");
+            this.displayMessage("Usage: ins [module_name]");
             return;
         }
 
@@ -70,12 +70,12 @@ class LuxOS {
             }
 
             const module = await import(`./modules/${moduleName}.js`);
+            this.modules[moduleName] = module;
+            this.displayMessage(`Module '${moduleName}' loaded successfully.`);
             if (module.default && typeof module.default.init === "function") {
-                this.modules[moduleName] = module.default; // 모듈 저장
                 await module.default.init(this); // LuxOS 컨텍스트 전달
-                this.displayMessage(`Module '${moduleName}' loaded successfully.`);
             } else {
-                throw new Error(`Module '${moduleName}' does not export a valid object with an init function.`);
+                this.displayMessage(`Module '${moduleName}' does not have a valid init function.`);
             }
         } catch (error) {
             this.displayMessage(`Failed to load module '${moduleName}': ${error.message}`);
