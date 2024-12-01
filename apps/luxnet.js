@@ -9,7 +9,7 @@ export default {
     },
 
     githubRepo: "doetoeri/LuxOSPlain", // 본인의 GitHub 저장소 이름
-    githubToken: "", // GitHub Personal Access Token 저장용
+    githubToken: "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", // GitHub Personal Access Token 저장용
 
     // GitHub 토큰 설정
     async setToken(args, os) {
