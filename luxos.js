@@ -1,30 +1,28 @@
 class LuxOS {
     constructor() {
-        this.commands = {}; // 명령어 저장 객체
+        this.commands = {}; // 명령어 저장
+        this.modules = {}; // 로드된 모듈 저장
         this.init();
     }
 
     async init() {
-        // 명령어를 직접 설정
-        this.commands['help'] = this.showHelp.bind(this);
-        this.commands['ins'] = this.insertApplication.bind(this); // Install application
-        this.commands['listapps'] = this.listApplications.bind(this);
-        this.commands['exit'] = this.exitSystem.bind(this);
-
+        // 기본 명령어 등록
+        this.commands["help"] = this.showHelp.bind(this);
+        this.commands["ins"] = this.loadModule.bind(this);
         this.displayMessage("Welcome to LuxOS* Modular");
         this.displayMessage("Type 'help' to see available commands.");
     }
 
     // 메시지 출력
     displayMessage(message) {
-        const terminal = document.getElementById('terminal');
+        const terminal = document.getElementById("terminal");
         terminal.textContent += `\n${message}`;
         terminal.scrollTop = terminal.scrollHeight;
     }
 
     // 명령어 실행
     async executeCommand(command) {
-        const [cmd, ...args] = command.trim().split(' ');
+        const [cmd, ...args] = command.trim().split(" ");
         if (this.commands[cmd]) {
             try {
                 await this.commands[cmd](args);
@@ -39,67 +37,44 @@ class LuxOS {
     // 명령어: help
     showHelp() {
         this.displayMessage("Available commands:");
-        this.displayMessage("- help: Show this help message.");
-        this.displayMessage("- ins [application]: Install an application.");
-        this.displayMessage("- listapps: List all installed applications.");
-        this.displayMessage("- exit: Exit the system.");
+        for (const cmd in this.commands) {
+            this.displayMessage(`- ${cmd}`);
+        }
     }
 
-    // 명령어: ins (Install Application)
-    async insertApplication(args) {
-        const appName = args[0];
-        if (!appName) {
-            this.displayMessage("Usage: ins [application_name]");
+    // 명령어: ins (Install Module)
+    async loadModule(args) {
+        const moduleName = args[0];
+        if (!moduleName) {
+            this.displayMessage("Usage: ins [module_name]");
             return;
         }
 
         try {
-            if (this.commands[`app_${appName}`]) {
-                this.displayMessage(`Application '${appName}' is already installed.`);
+            if (this.modules[moduleName]) {
+                this.displayMessage(`Module '${moduleName}' is already loaded.`);
                 return;
             }
 
-            const application = await import(`./apps/${appName}.js`);
-            this.commands[`app_${appName}`] = application.default.init(this); // 응용프로그램 연결
-            this.displayMessage(`Application '${appName}' installed successfully.`);
-            if (application.default && typeof application.default.init === "function") {
-                await application.default.init(this); // LuxOS 컨텍스트 전달
-            } else {
-                this.displayMessage(`Application '${appName}' does not have a valid init function.`);
-            }
+            const module = await import(`./modules/${moduleName}.js`);
+            this.modules[moduleName] = module.default;
+            await module.default.init(this); // LuxOS 컨텍스트 전달
+            this.displayMessage(`Module '${moduleName}' loaded successfully.`);
         } catch (error) {
-            this.displayMessage(`Failed to install application '${appName}': ${error.message}`);
+            this.displayMessage(`Failed to load module '${moduleName}': ${error.message}`);
         }
-    }
-
-    // 명령어: listapps
-    listApplications() {
-        const installedApps = Object.keys(this.commands).filter(cmd => cmd.startsWith('app_'));
-        if (installedApps.length === 0) {
-            this.displayMessage("No applications installed.");
-        } else {
-            this.displayMessage(`Installed applications: ${installedApps.map(cmd => cmd.replace('app_', '')).join(', ')}`);
-        }
-    }
-
-    // 명령어: exit
-    exitSystem() {
-        this.displayMessage("Exiting LuxOS*. Goodbye!");
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
     const luxOS = new LuxOS();
-    const inputField = document.getElementById('input');
-    const terminal = document.getElementById('terminal');
+    const inputField = document.getElementById("input");
 
-    inputField.addEventListener('keypress', async (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
+    inputField.addEventListener("keypress", async (e) => {
+        if (e.key === "Enter") {
             const command = inputField.value.trim();
-            terminal.textContent += `\n> ${command}`;
-            await luxOS.executeCommand(command);
-            inputField.value = '';
+            luxOS.executeCommand(command);
+            inputField.value = "";
         }
     });
 });
