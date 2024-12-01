@@ -1,40 +1,40 @@
 export default {
     async init(os) {
-        os.registerCommand("register", this.register.bind(this));
-        os.registerCommand("login", this.login.bind(this));
-        os.registerCommand("createpost", this.createPost.bind(this));
-        os.registerCommand("viewposts", this.viewPosts.bind(this));
-        os.registerCommand("editpost", this.editPost.bind(this));
-        os.registerCommand("deletepost", this.deletePost.bind(this));
+        os.registerCommand("register", (args) => this.register(args, os));
+        os.registerCommand("login", (args) => this.login(args, os));
+        os.registerCommand("createpost", (args) => this.createPost(args, os));
+        os.registerCommand("viewposts", (args) => this.viewPosts(args, os));
+        os.registerCommand("editpost", (args) => this.editPost(args, os));
+        os.registerCommand("deletepost", (args) => this.deletePost(args, os));
 
         os.displayMessage("LuxNet Module loaded. Available commands: register, login, createpost, viewposts, editpost, deletepost.");
     },
 
-    async register(args) {
+    async register(args, os) {
         const [username, password] = args;
         if (!username || !password) {
-            return "Usage: register [username] [password]";
+            return os.displayMessage("Usage: register [username] [password]");
         }
-        return `Registered user '${username}' successfully.`;
+        return os.displayMessage(`Registered user '${username}' successfully.`);
     },
 
-    async login(args) {
+    async login(args, os) {
         const [username, password] = args;
         if (!username || !password) {
-            return "Usage: login [username] [password]";
+            return os.displayMessage("Usage: login [username] [password]");
         }
-        return `Login successful for user '${username}'.`;
+        return os.displayMessage(`Login successful for user '${username}'.`);
     },
 
-    async createPost(args) {
+    async createPost(args, os) {
         const [title, ...content] = args;
         if (!title || !content.length) {
-            return "Usage: createpost [title] [content]";
+            return os.displayMessage("Usage: createpost [title] [content]");
         }
-        return `Post '${title}' created successfully.`;
+        return os.displayMessage(`Post '${title}' created successfully.`);
     },
 
-    async viewPosts() {
-        return "No posts available.";
+    async viewPosts(args, os) {
+        return os.displayMessage("No posts available.");
     },
 };
