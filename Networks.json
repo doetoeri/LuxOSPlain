@@ -1,1 +1,10 @@
-[]
+{
+    "users": [],
+    "networks": {
+        "Network1": [],
+        "Network2": [],
+        "Network3": [],
+        "Network4": [],
+        "Network5": []
+    }
+}
