@@ -6,57 +6,8 @@ export default {
         os.registerCommand("viewposts", this.viewPosts.bind(this));
         os.registerCommand("editpost", this.editPost.bind(this));
         os.registerCommand("deletepost", this.deletePost.bind(this));
+
         os.displayMessage("LuxNet Module loaded. Available commands: register, login, createpost, viewposts, editpost, deletepost.");
-
-        // 필요한 파일 확인 및 초기화
-        await this.ensureFileExists("users.json", []);
-        await this.ensureFileExists("posts.json", []);
-    },
-
-    async ensureFileExists(filename, defaultData) {
-        try {
-            await this.readFile(filename);
-        } catch (error) {
-            if (error.message.includes("404")) {
-                await this.writeFile(filename, defaultData);
-                os.displayMessage(`File '${filename}' created with default data.`);
-            } else {
-                os.displayMessage(`Error checking file '${filename}': ${error.message}`);
-            }
-        }
-    },
-
-    async readFile(filename) {
-        const response = await fetch(`https://api.github.com/repos/doetoeri/LuxOSPlain/contents/modules/${filename}`, {
-            headers: { Authorization: `token ${process.env.LUXNET_TOKEN}` },
-        });
-        if (!response.ok) throw new Error(`Failed to fetch ${filename}: ${response.statusText}`);
-        const data = await response.json();
-        return JSON.parse(atob(data.content));
-    },
-
-    async writeFile(filename, data) {
-        const content = btoa(JSON.stringify(data, null, 2));
-        const url = `https://api.github.com/repos/doetoeri/LuxOSPlain/contents/modules/${filename}`;
-        const response = await fetch(url, {
-            method: "PUT",
-            headers: { Authorization: `token ${process.env.LUXNET_TOKEN}` },
-            body: JSON.stringify({
-                message: `Update ${filename}`,
-                content,
-                sha: (await this.getFileSha(filename)),
-            }),
-        });
-        if (!response.ok) throw new Error(`Failed to update ${filename}: ${response.statusText}`);
-    },
-
-    async getFileSha(filename) {
-        const response = await fetch(`https://api.github.com/repos/doetoeri/LuxOSPlain/contents/modules/${filename}`, {
-            headers: { Authorization: `token ${process.env.LUXNET_TOKEN}` },
-        });
-        if (!response.ok) throw new Error(`Failed to fetch SHA for ${filename}: ${response.statusText}`);
-        const data = await response.json();
-        return data.sha;
     },
 
     async register(args, os) {
@@ -116,5 +67,38 @@ export default {
         } catch (error) {
             os.displayMessage(`Error: Unable to view posts. ${error.message}`);
         }
+    },
+
+    async readFile(filename) {
+        const response = await fetch(`https://api.github.com/repos/doetoeri/LuxOSPlain/contents/modules/${filename}`, {
+            headers: { Authorization: `token ${process.env.LUXNET_TOKEN}` },
+        });
+        if (!response.ok) throw new Error(`Failed to fetch ${filename}: ${response.statusText}`);
+        const data = await response.json();
+        return JSON.parse(atob(data.content));
+    },
+
+    async writeFile(filename, data) {
+        const content = btoa(JSON.stringify(data, null, 2));
+        const url = `https://api.github.com/repos/doetoeri/LuxOSPlain/contents/modules/${filename}`;
+        const response = await fetch(url, {
+            method: "PUT",
+            headers: { Authorization: `token ${process.env.LUXNET_TOKEN}` },
+            body: JSON.stringify({
+                message: `Update ${filename}`,
+                content,
+                sha: (await this.getFileSha(filename)),
+            }),
+        });
+        if (!response.ok) throw new Error(`Failed to update ${filename}: ${response.statusText}`);
+    },
+
+    async getFileSha(filename) {
+        const response = await fetch(`https://api.github.com/repos/doetoeri/LuxOSPlain/contents/modules/${filename}`, {
+            headers: { Authorization: `token ${process.env.LUXNET_TOKEN}` },
+        });
+        if (!response.ok) throw new Error(`Failed to fetch SHA for ${filename}: ${response.statusText}`);
+        const data = await response.json();
+        return data.sha;
     },
 };
