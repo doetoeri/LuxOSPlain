@@ -6,7 +6,7 @@ class LuxOS {
         this.sharedState = {}; // 공유 데이터 저장
         this.os = this; // LuxOS 인스턴스를 os로 참조
         this.githubRepo = "doetoeri/LuxOSPlain"; // GitHub 저장소 경로
-        this.githubToken = ""; // GitHub 토큰 (환경 변수로 관리 권장)
+        this.githubToken = LUXNET_TOKEN; // GitHub 토큰 (환경 변수로 관리 권장)
         this.init();
     }
 
