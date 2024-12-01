@@ -2,11 +2,11 @@ export default {
     async init(os) {
         this.os = os; // LuxOS와 연결
 
-        // 명령어 등록 (올바른 'this' 바인딩 사용)
-        os.commands["register"] = this.register.bind(this);
-        os.commands["login"] = this.login.bind(this);
-        os.commands["createpost"] = this.createPost.bind(this);
-        os.commands["viewposts"] = this.viewPosts.bind(this);
+        // 명령어 등록
+        os.commands["register"] = (args) => this.register(args);
+        os.commands["login"] = (args) => this.login(args);
+        os.commands["createpost"] = (args) => this.createPost(args);
+        os.commands["viewposts"] = (args) => this.viewPosts(args);
 
         os.displayMessage("LuxNet Application loaded. Available commands: register, login, createpost, viewposts.");
     },
