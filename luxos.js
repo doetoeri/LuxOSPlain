@@ -1,13 +1,13 @@
 class LuxOS {
     constructor() {
         this.commands = {}; // 명령어 저장
-        this.applications = {}; // 로드된 응용프로그램 저장
+        this.applications = {}; // 설치된 응용프로그램 저장
         this.init();
     }
 
     async init() {
         this.registerCommand('help', this.showHelp.bind(this));
-        this.registerCommand('ins', this.installApplication.bind(this)); // loadmodule -> ins 변경
+        this.registerCommand('ins', this.insertApplication.bind(this)); // install application
         this.registerCommand('listapps', this.listApplications.bind(this));
         this.registerCommand('exit', this.exitSystem.bind(this));
 
@@ -56,7 +56,7 @@ class LuxOS {
     }
 
     // 명령어: ins (Install Application)
-    async installApplication(args) {
+    async insertApplication(args) {
         const appName = args[0];
         if (!appName) {
             this.displayMessage("Usage: ins [application_name]");
