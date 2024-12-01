@@ -3,24 +3,30 @@ export default {
         os.commands["register"] = (args) => this.register(args, os);
         os.commands["createpost"] = (args) => this.createPost(args, os);
         os.commands["viewposts"] = (args) => this.viewPosts(args, os);
+        os.commands["settoken"] = (args) => this.setToken(args, os);
 
-        os.displayMessage("LuxNet Application loaded. Available commands: register, createpost, viewposts.");
+        os.displayMessage("LuxNet Application loaded. Available commands: register, createpost, viewposts, settoken.");
     },
 
-    // GitHub 저장소 정보
     githubRepo: "doetoeri/LuxOSPlain", // 본인의 GitHub 저장소
+    githubToken: "", // 초기화
 
-    async getToken() {
-        // GitHub Actions 또는 Codespaces 환경 변수를 사용하여 토큰을 가져옵니다.
-        return process.env.LUXNET_TOKEN;
+    async setToken(args, os) {
+        const [token] = args;
+        if (!token) {
+            os.displayMessage("Usage: settoken [GitHub Personal Access Token]");
+            return;
+        }
+        this.githubToken = token;
+        os.displayMessage("GitHub token set successfully.");
     },
 
     async readFile(filename) {
         try {
-            const token = await this.getToken();
+            if (!this.githubToken) throw new Error("GitHub token is not set. Use 'settoken' to set it.");
             const response = await fetch(`https://api.github.com/repos/${this.githubRepo}/contents/data/${filename}`, {
                 headers: {
-                    Authorization: `token ${token}`
+                    Authorization: `token ${this.githubToken}`
                 }
             });
             if (!response.ok) throw new Error(`Failed to read ${filename}`);
@@ -34,11 +40,11 @@ export default {
 
     async writeFile(filename, data) {
         try {
-            const token = await this.getToken();
+            if (!this.githubToken) throw new Error("GitHub token is not set. Use 'settoken' to set it.");
             // 파일 SHA 가져오기
             const response = await fetch(`https://api.github.com/repos/${this.githubRepo}/contents/data/${filename}`, {
                 headers: {
-                    Authorization: `token ${token}`
+                    Authorization: `token ${this.githubToken}`
                 }
             });
             if (!response.ok) throw new Error(`Failed to fetch SHA for ${filename}`);
@@ -48,7 +54,7 @@ export default {
             const updateResponse = await fetch(`https://api.github.com/repos/${this.githubRepo}/contents/data/${filename}`, {
                 method: "PUT",
                 headers: {
-                    Authorization: `token ${token}`,
+                    Authorization: `token ${this.githubToken}`,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
