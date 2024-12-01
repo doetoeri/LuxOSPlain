@@ -5,15 +5,14 @@ class LuxOS {
         this.apps = {}; // 로드된 응용프로그램 저장
         this.sharedState = {}; // 공유 데이터 저장
         this.os = this; // LuxOS 인스턴스를 os로 참조
-        this.githubRepo = "doetoeri/LuxOSPlain"; // GitHub 저장소 경로
-        this.githubToken = LUXNET_TOKEN; // GitHub 토큰 (환경 변수로 관리 권장)
+        this.githubRepo = "doetoeri/LuxOSPlain"; // GitHub 저장소
+        this.githubToken = LUXNET_TOKEN; // 환경 변수로 관리 권장
         this.init();
     }
 
     async init() {
         // 기본 명령어 등록
         this.commands["help"] = this.showHelp.bind(this);
-        this.commands["ins"] = this.loadModule.bind(this);
         this.commands["addapp"] = this.addApp.bind(this);
         this.commands["listapps"] = this.listApps.bind(this);
         this.commands["runapp"] = this.runApp.bind(this);
@@ -48,29 +47,6 @@ class LuxOS {
         this.displayMessage("Available commands:");
         for (const cmd in this.commands) {
             this.displayMessage(`- ${cmd}`);
-        }
-    }
-
-    // 명령어: ins (Install Module)
-    async loadModule(args) {
-        const moduleName = args[0];
-        if (!moduleName) {
-            this.displayMessage("Usage: ins [module_name]");
-            return;
-        }
-
-        try {
-            if (this.modules[moduleName]) {
-                this.displayMessage(`Module '${moduleName}' is already loaded.`);
-                return;
-            }
-
-            const module = await import(`./modules/${moduleName}.js`);
-            this.modules[moduleName] = module.default;
-            await module.default.init(this.os); // LuxOS 컨텍스트 전달
-            this.displayMessage(`Module '${moduleName}' loaded successfully.`);
-        } catch (error) {
-            this.displayMessage(`Failed to load module '${moduleName}': ${error.message}`);
         }
     }
 
