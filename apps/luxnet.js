@@ -1,25 +1,27 @@
 export default {
+    // 초기화: LuxOS와 연결
     async init(os) {
-        os.commands["register"] = (args) => this.register(args, os);
-        os.commands["createpost"] = (args) => this.createPost(args, os);
-        os.commands["viewposts"] = (args) => this.viewPosts(args, os);
-        os.commands["settoken"] = (args) => this.setToken(args, os);
+        this.os = os; // LuxOS 컨텍스트 저장
+        os.commands["register"] = (args) => this.register(args);
+        os.commands["createpost"] = (args) => this.createPost(args);
+        os.commands["viewposts"] = (args) => this.viewPosts(args);
+        os.commands["settoken"] = (args) => this.setToken(args);
 
         os.displayMessage("LuxNet Application loaded. Available commands: register, createpost, viewposts, settoken.");
     },
 
     githubRepo: "doetoeri/LuxOSPlain", // 본인의 GitHub 저장소 이름
-    githubToken: "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", // GitHub Personal Access Token 저장용
+    githubToken: process.env.LUXNET_TOKEN || "", // GitHub 토큰 환경 변수
 
     // GitHub 토큰 설정
-    async setToken(args, os) {
+    async setToken(args) {
         const [token] = args;
         if (!token) {
-            os.displayMessage("Usage: settoken [GitHub Personal Access Token]");
+            this.os.displayMessage("Usage: settoken [GitHub Personal Access Token]");
             return;
         }
         this.githubToken = token;
-        os.displayMessage("GitHub token set successfully.");
+        this.os.displayMessage("GitHub token set successfully.");
     },
 
     // GitHub에서 파일 읽기
@@ -36,7 +38,7 @@ export default {
             return JSON.parse(atob(data.content)); // Base64 디코딩 후 JSON 파싱
         } catch (error) {
             console.error(`Error reading file: ${error.message}`);
-            os.displayMessage(`Error reading file: ${error.message}`);
+            this.os.displayMessage(`Error reading file: ${error.message}`);
             return [];
         }
     },
@@ -69,52 +71,52 @@ export default {
             });
 
             if (!updateResponse.ok) throw new Error(`Failed to update ${filename}`);
-            os.displayMessage(`File ${filename} updated successfully.`);
+            this.os.displayMessage(`File ${filename} updated successfully.`);
         } catch (error) {
             console.error(`Error writing file: ${error.message}`);
-            os.displayMessage(`Error writing file: ${error.message}`);
+            this.os.displayMessage(`Error writing file: ${error.message}`);
         }
     },
 
     // 사용자 등록
-    async register(args, os) {
+    async register(args) {
         const [username, password] = args;
         if (!username || !password) {
-            os.displayMessage("Usage: register [username] [password]");
+            this.os.displayMessage("Usage: register [username] [password]");
             return;
         }
 
         const users = (await this.readFile("users.json")) || [];
         if (users.some(user => user.username === username)) {
-            os.displayMessage("Error: Username already exists.");
+            this.os.displayMessage("Error: Username already exists.");
             return;
         }
         users.push({ username, password });
         await this.writeFile("users.json", users);
-        os.displayMessage(`Registered user: ${username}`);
+        this.os.displayMessage(`Registered user: ${username}`);
     },
 
     // 게시글 작성
-    async createPost(args, os) {
+    async createPost(args) {
         const [title, ...content] = args;
         if (!title || !content.length) {
-            os.displayMessage("Usage: createpost [title] [content]");
+            this.os.displayMessage("Usage: createpost [title] [content]");
             return;
         }
 
         const posts = (await this.readFile("posts.json")) || [];
         posts.push({ id: posts.length + 1, title, content: content.join(" "), author: "admin" });
         await this.writeFile("posts.json", posts);
-        os.displayMessage(`Post created: ${title}`);
+        this.os.displayMessage(`Post created: ${title}`);
     },
 
     // 게시글 보기
-    async viewPosts(args, os) {
+    async viewPosts() {
         const posts = (await this.readFile("posts.json")) || [];
         if (posts.length === 0) {
-            os.displayMessage("No posts available.");
+            this.os.displayMessage("No posts available.");
             return;
         }
-        posts.forEach(post => os.displayMessage(`[${post.id}] ${post.title} by ${post.author}`));
+        posts.forEach(post => this.os.displayMessage(`[${post.id}] ${post.title} by ${post.author}`));
     }
 };
