@@ -58,7 +58,7 @@ class LuxOS {
                 return;
             }
 
-            const module = await import(`./modules/${moduleName}.js`);
+            const module = await import(`./apps/${moduleName}.js`);
             this.modules[moduleName] = module.default;
             await module.default.init(this.os); // LuxOS 컨텍스트 전달
             this.displayMessage(`Module '${moduleName}' loaded successfully.`);
