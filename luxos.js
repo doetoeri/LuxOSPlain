@@ -1,14 +1,14 @@
 class LuxOS {
     constructor() {
         this.commands = {}; // 명령어 저장
-        this.modules = {}; // 로드된 모듈 저장
+        this.applications = {}; // 로드된 응용프로그램 저장
         this.init();
     }
 
     async init() {
         this.registerCommand('help', this.showHelp.bind(this));
-        this.registerCommand('ins', this.insertModule.bind(this)); // loadmodule -> ins 변경
-        this.registerCommand('listmodules', this.listModules.bind(this));
+        this.registerCommand('ins', this.installApplication.bind(this)); // loadmodule -> ins 변경
+        this.registerCommand('listapps', this.listApplications.bind(this));
         this.registerCommand('exit', this.exitSystem.bind(this));
 
         this.displayMessage("Welcome to LuxOS* Modular");
@@ -50,45 +50,45 @@ class LuxOS {
     showHelp() {
         this.displayMessage("Available commands:");
         this.displayMessage("- help: Show this help message.");
-        this.displayMessage("- ins [module]: Insert a module.");
-        this.displayMessage("- listmodules: List all loaded modules.");
+        this.displayMessage("- ins [application]: Install an application.");
+        this.displayMessage("- listapps: List all installed applications.");
         this.displayMessage("- exit: Exit the system.");
     }
 
-    // 명령어: ins
-    async insertModule(args) {
-        const moduleName = args[0];
-        if (!moduleName) {
-            this.displayMessage("Usage: ins [module_name]");
+    // 명령어: ins (Install Application)
+    async installApplication(args) {
+        const appName = args[0];
+        if (!appName) {
+            this.displayMessage("Usage: ins [application_name]");
             return;
         }
 
         try {
-            if (this.modules[moduleName]) {
-                this.displayMessage(`Module '${moduleName}' is already loaded.`);
+            if (this.applications[appName]) {
+                this.displayMessage(`Application '${appName}' is already installed.`);
                 return;
             }
 
-            const module = await import(`./modules/${moduleName}.js`);
-            this.modules[moduleName] = module;
-            this.displayMessage(`Module '${moduleName}' loaded successfully.`);
-            if (module.default && typeof module.default.init === "function") {
-                await module.default.init(this); // LuxOS 컨텍스트 전달
+            const application = await import(`./apps/${appName}.js`);
+            this.applications[appName] = application;
+            this.displayMessage(`Application '${appName}' installed successfully.`);
+            if (application.default && typeof application.default.init === "function") {
+                await application.default.init(this); // LuxOS 컨텍스트 전달
             } else {
-                this.displayMessage(`Module '${moduleName}' does not have a valid init function.`);
+                this.displayMessage(`Application '${appName}' does not have a valid init function.`);
             }
         } catch (error) {
-            this.displayMessage(`Failed to load module '${moduleName}': ${error.message}`);
+            this.displayMessage(`Failed to install application '${appName}': ${error.message}`);
         }
     }
 
-    // 명령어: listmodules
-    listModules() {
-        const loadedModules = Object.keys(this.modules);
-        if (loadedModules.length === 0) {
-            this.displayMessage("No modules loaded.");
+    // 명령어: listapps
+    listApplications() {
+        const installedApps = Object.keys(this.applications);
+        if (installedApps.length === 0) {
+            this.displayMessage("No applications installed.");
         } else {
-            this.displayMessage(`Loaded modules: ${loadedModules.join(', ')}`);
+            this.displayMessage(`Installed applications: ${installedApps.join(', ')}`);
         }
     }
 
