@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LuxOS*</title>
     <style>
-        /* 둥근모꼴 폰트 */
+        /* 둥근모꼴 폰트 적용 */
         @font-face {
             font-family: 'DungGeunMo';
             src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2107@1.1/DungGeunMo.woff') format('woff');
@@ -13,11 +13,11 @@
             font-style: normal;
         }
 
-        /* 기본 스타일 */
+        /* 전체 스타일 */
         body {
-            background-color: black; /* DOS 스타일 배경 */
-            color: lime; /* DOS 스타일 텍스트 */
-            font-family: 'DungGeunMo', monospace; /* 둥근모꼴 + 모노스페이스 */
+            background-color: black;
+            color: lime;
+            font-family: 'DungGeunMo', monospace;
             margin: 0;
             padding: 0;
             display: flex;
@@ -25,17 +25,17 @@
             height: 100vh;
         }
 
-        /* 터미널 창 스타일 */
+        /* 터미널 출력 영역 스타일 */
         #terminal {
             flex: 1;
             overflow-y: auto;
             white-space: pre-wrap;
             padding: 10px;
             box-sizing: border-box;
-            border: 2px solid lime; /* DOS 스타일 테두리 */
+            border: 2px solid lime;
         }
 
-        /* 입력창 스타일 */
+        /* 입력 영역 스타일 */
         #input-container {
             display: flex;
             align-items: center;
@@ -77,16 +77,74 @@
     </style>
 </head>
 <body>
-    <!-- 터미널 출력 -->
+    <!-- 터미널 출력 영역 -->
     <div id="terminal"></div>
     
-    <!-- 사용자 입력 -->
+    <!-- 사용자 입력 영역 -->
     <div id="input-container">
         <span>&gt;</span>
         <input type="text" id="input" autocomplete="off">
     </div>
 
-    <!-- LuxOS 스크립트 -->
-    <script src="luxos.js"></script>
+    <script>
+        // LuxOS 클래스 정의
+        class LuxOS {
+            constructor() {
+                this.commands = {}; // 명령어 저장
+                this.init();
+            }
+
+            init() {
+                // 기본 명령어 등록
+                this.commands["help"] = this.showHelp.bind(this);
+                this.displayMessage("Welcome to LuxOS* Modular");
+                this.displayMessage("Type 'help' to see available commands.");
+            }
+
+            // 메시지 출력
+            displayMessage(message) {
+                const terminal = document.getElementById("terminal");
+                terminal.textContent += `\n${message}`;
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+
+            // 명령어 실행
+            executeCommand(command) {
+                const [cmd, ...args] = command.trim().split(" ");
+                if (this.commands[cmd]) {
+                    try {
+                        this.commands[cmd](args);
+                    } catch (error) {
+                        this.displayMessage(`Error executing '${cmd}': ${error.message}`);
+                    }
+                } else {
+                    this.displayMessage(`Unknown command: ${cmd}`);
+                }
+            }
+
+            // 명령어: help
+            showHelp() {
+                this.displayMessage("Available commands:");
+                for (const cmd in this.commands) {
+                    this.displayMessage(`- ${cmd}`);
+                }
+            }
+        }
+
+        // DOMContentLoaded 이벤트 리스너
+        document.addEventListener("DOMContentLoaded", () => {
+            const luxOS = new LuxOS();
+            const inputField = document.getElementById("input");
+
+            // Enter 키 입력 시 명령어 실행
+            inputField.addEventListener("keypress", (e) => {
+                if (e.key === "Enter") {
+                    const command = inputField.value.trim();
+                    luxOS.executeCommand(command);
+                    inputField.value = "";
+                }
+            });
+        });
+    </script>
 </body>
 </html>
