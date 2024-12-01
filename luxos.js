@@ -70,12 +70,12 @@ class LuxOS {
             }
 
             const module = await import(`./modules/${moduleName}.js`);
-            this.modules[moduleName] = module;
-            this.displayMessage(`Module '${moduleName}' loaded successfully.`);
             if (module.default && typeof module.default.init === "function") {
+                this.modules[moduleName] = module.default; // 모듈 저장
                 await module.default.init(this); // LuxOS 컨텍스트 전달
+                this.displayMessage(`Module '${moduleName}' loaded successfully.`);
             } else {
-                this.displayMessage(`Module '${moduleName}' does not have an init function.`);
+                throw new Error(`Module '${moduleName}' does not export a valid object with an init function.`);
             }
         } catch (error) {
             this.displayMessage(`Failed to load module '${moduleName}': ${error.message}`);
