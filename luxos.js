@@ -2,6 +2,8 @@ class LuxOS {
     constructor() {
         this.commands = {}; // 명령어 저장
         this.modules = {}; // 로드된 모듈 저장
+        this.sharedState = {}; // LuxOS와 모듈 간 공유 데이터
+        this.os = this; // LuxOS 인스턴스를 os로 참조
         this.init();
     }
 
@@ -58,7 +60,7 @@ class LuxOS {
 
             const module = await import(`./modules/${moduleName}.js`);
             this.modules[moduleName] = module.default;
-            await module.default.init(this); // LuxOS 컨텍스트 전달
+            await module.default.init(this.os); // LuxOS 컨텍스트 전달
             this.displayMessage(`Module '${moduleName}' loaded successfully.`);
         } catch (error) {
             this.displayMessage(`Failed to load module '${moduleName}': ${error.message}`);
