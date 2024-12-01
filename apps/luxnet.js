@@ -8,9 +8,10 @@ export default {
         os.displayMessage("LuxNet Application loaded. Available commands: register, createpost, viewposts, settoken.");
     },
 
-    githubRepo: "doetoeri/LuxOSPlain", // 본인의 GitHub 저장소
-    githubToken: "", // 초기화
+    githubRepo: "doetoeri/LuxOSPlain", // 본인의 GitHub 저장소 이름
+    githubToken: "", // GitHub Personal Access Token 저장용
 
+    // GitHub 토큰 설정
     async setToken(args, os) {
         const [token] = args;
         if (!token) {
@@ -21,6 +22,7 @@ export default {
         os.displayMessage("GitHub token set successfully.");
     },
 
+    // GitHub에서 파일 읽기
     async readFile(filename) {
         try {
             if (!this.githubToken) throw new Error("GitHub token is not set. Use 'settoken' to set it.");
@@ -34,10 +36,12 @@ export default {
             return JSON.parse(atob(data.content)); // Base64 디코딩 후 JSON 파싱
         } catch (error) {
             console.error(`Error reading file: ${error.message}`);
+            os.displayMessage(`Error reading file: ${error.message}`);
             return [];
         }
     },
 
+    // GitHub에 파일 쓰기
     async writeFile(filename, data) {
         try {
             if (!this.githubToken) throw new Error("GitHub token is not set. Use 'settoken' to set it.");
@@ -65,17 +69,21 @@ export default {
             });
 
             if (!updateResponse.ok) throw new Error(`Failed to update ${filename}`);
+            os.displayMessage(`File ${filename} updated successfully.`);
         } catch (error) {
             console.error(`Error writing file: ${error.message}`);
+            os.displayMessage(`Error writing file: ${error.message}`);
         }
     },
 
+    // 사용자 등록
     async register(args, os) {
         const [username, password] = args;
         if (!username || !password) {
             os.displayMessage("Usage: register [username] [password]");
             return;
         }
+
         const users = (await this.readFile("users.json")) || [];
         if (users.some(user => user.username === username)) {
             os.displayMessage("Error: Username already exists.");
@@ -86,18 +94,21 @@ export default {
         os.displayMessage(`Registered user: ${username}`);
     },
 
+    // 게시글 작성
     async createPost(args, os) {
         const [title, ...content] = args;
         if (!title || !content.length) {
             os.displayMessage("Usage: createpost [title] [content]");
             return;
         }
+
         const posts = (await this.readFile("posts.json")) || [];
         posts.push({ id: posts.length + 1, title, content: content.join(" "), author: "admin" });
         await this.writeFile("posts.json", posts);
         os.displayMessage(`Post created: ${title}`);
     },
 
+    // 게시글 보기
     async viewPosts(args, os) {
         const posts = (await this.readFile("posts.json")) || [];
         if (posts.length === 0) {
