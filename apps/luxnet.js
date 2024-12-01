@@ -1,7 +1,6 @@
 export default {
-    // 초기화: LuxOS와 연결
     async init(os) {
-        // LuxOS 컨텍스트 저장
+        // LuxOS와 연결
         this.os = os;
 
         // 명령어 등록
@@ -14,11 +13,10 @@ export default {
         os.displayMessage("LuxNet Application loaded. Available commands: register, login, createpost, viewposts, settoken.");
     },
 
-    githubRepo: "doetoeri/LuxOSPlain", // 본인의 GitHub 저장소 이름
-    githubToken: "", // GitHub Personal Access Token 저장용
-    loggedInUser: null, // 현재 로그인된 사용자
+    githubRepo: "doetoeri/LuxOSPlain",
+    githubToken: "",
+    loggedInUser: null,
 
-    // GitHub 토큰 설정 명령어
     async setToken(args) {
         const [token] = args;
         if (!token) {
@@ -29,32 +27,26 @@ export default {
         this.os.displayMessage("GitHub token set successfully.");
     },
 
-    // GitHub에서 파일 읽기
     async readFile(filename) {
         try {
             if (!this.githubToken) throw new Error("GitHub token is not set. Use 'settoken' to set it.");
             const response = await fetch(`https://api.github.com/repos/${this.githubRepo}/contents/data/${filename}`, {
-                headers: {
-                    Authorization: `token ${this.githubToken}`
-                }
+                headers: { Authorization: `token ${this.githubToken}` }
             });
             if (!response.ok) throw new Error(`Failed to read ${filename}`);
             const data = await response.json();
-            return JSON.parse(atob(data.content)); // Base64 디코딩 후 JSON 파싱
+            return JSON.parse(atob(data.content));
         } catch (error) {
             this.os.displayMessage(`Error reading file: ${error.message}`);
             return [];
         }
     },
 
-    // GitHub에 파일 쓰기
     async writeFile(filename, data) {
         try {
             if (!this.githubToken) throw new Error("GitHub token is not set. Use 'settoken' to set it.");
             const response = await fetch(`https://api.github.com/repos/${this.githubRepo}/contents/data/${filename}`, {
-                headers: {
-                    Authorization: `token ${this.githubToken}`
-                }
+                headers: { Authorization: `token ${this.githubToken}` }
             });
             if (!response.ok) throw new Error(`Failed to fetch SHA for ${filename}`);
             const fileInfo = await response.json();
@@ -67,7 +59,7 @@ export default {
                 },
                 body: JSON.stringify({
                     message: `Update ${filename}`,
-                    content: btoa(JSON.stringify(data, null, 2)), // Base64 인코딩
+                    content: btoa(JSON.stringify(data, null, 2)),
                     sha: fileInfo.sha
                 })
             });
@@ -79,7 +71,6 @@ export default {
         }
     },
 
-    // 사용자 등록
     async register(args) {
         const [username, password] = args;
         if (!username || !password) {
@@ -97,7 +88,6 @@ export default {
         this.os.displayMessage(`Registered user: ${username}`);
     },
 
-    // 로그인
     async login(args) {
         const [username, password] = args;
         if (!username || !password) {
@@ -112,11 +102,10 @@ export default {
             this.loggedInUser = user.username;
             this.os.displayMessage(`User '${username}' logged in successfully.`);
         } else {
-            this.os.displayMessage("Error: Invalid username or password, or user not registered.");
+            this.os.displayMessage("Error: Invalid username or password.");
         }
     },
 
-    // 게시글 작성
     async createPost(args) {
         if (!this.loggedInUser) {
             this.os.displayMessage("Error: You must be logged in to create a post.");
@@ -135,7 +124,6 @@ export default {
         this.os.displayMessage(`Post created: ${title}`);
     },
 
-    // 게시글 보기
     async viewPosts() {
         const posts = (await this.readFile("posts.json")) || [];
         if (posts.length === 0) {
