@@ -35,6 +35,8 @@ class LuxOS {
                 const result = await this.commands[cmd](args);
                 if (result) {
                     this.displayMessage(result);
+                } else {
+                    this.displayMessage(`Command '${cmd}' executed successfully.`);
                 }
             } catch (error) {
                 this.displayMessage(`Error executing '${cmd}': ${error.message}`);
@@ -67,41 +69,17 @@ class LuxOS {
                 return;
             }
 
-            // 모듈 파일을 동적으로 가져와 실행
-            const module = await this.loadModuleFiles(moduleName);
+            const module = await import(`./modules/${moduleName}.js`);
             this.modules[moduleName] = module;
-
             this.displayMessage(`Module '${moduleName}' loaded successfully.`);
             if (module.default && typeof module.default.init === "function") {
                 await module.default.init(this); // LuxOS 컨텍스트 전달
+            } else {
+                this.displayMessage(`Module '${moduleName}' does not have an init function.`);
             }
         } catch (error) {
             this.displayMessage(`Failed to load module '${moduleName}': ${error.message}`);
         }
-    }
-
-    // 모듈 파일 로드
-    async loadModuleFiles(moduleName) {
-        const basePath = `./modules/${moduleName}`;
-        const mainModule = await import(`${basePath}.js`);
-        const additionalFiles = await this.fetchRelatedFiles(moduleName);
-
-        // 관련 파일을 LuxOS에 추가 처리 (필요시 초기화)
-        for (const file of additionalFiles) {
-            this.displayMessage(`Processing additional file: ${file}`);
-            // 필요에 따라 추가 로직 구현
-        }
-
-        return mainModule;
-    }
-
-    // 관련 파일 검색 (예: .json, .config 등)
-    async fetchRelatedFiles(moduleName) {
-        const response = await fetch(`./modules/${moduleName}/related.json`);
-        if (response.ok) {
-            return await response.json(); // 관련 파일 목록
-        }
-        return []; // 관련 파일이 없으면 빈 배열 반환
     }
 
     // 명령어: listmodules
