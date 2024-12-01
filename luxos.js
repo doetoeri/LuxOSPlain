@@ -31,7 +31,16 @@ class LuxOS {
     async executeCommand(command) {
         const [cmd, ...args] = command.trim().split(' ');
         if (this.commands[cmd]) {
-            await this.commands[cmd](args);
+            try {
+                const result = await this.commands[cmd](args);
+                if (result) {
+                    this.displayMessage(result); // 명령어 실행 결과 출력
+                } else {
+                    this.displayMessage(`Command '${cmd}' executed successfully.`);
+                }
+            } catch (error) {
+                this.displayMessage(`Error executing '${cmd}': ${error.message}`);
+            }
         } else {
             this.displayMessage(`Unknown command: ${cmd}`);
         }
